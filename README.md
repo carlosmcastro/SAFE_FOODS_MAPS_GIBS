@@ -6,4 +6,5 @@ Basic use:
     from GIBS_Download_Join import total_processing
     total_processing((row, column), name_map_save)
     
-    
+Outstanding tasks:
+    Date management, zoom option.
