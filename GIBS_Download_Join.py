@@ -5,6 +5,13 @@ from PIL import Image
 url = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2012-07-09/250m/6/{}/{}.jpg'
 path_tmp = 'residual'
 
+#Maximum limits.
+limits = []
+
+#We generate a queue to manage the access to the memory of the processes.
+manager = multiprocessing.Manager()
+queue = manager.Queue()
+
 #The images are ordered in a queue;
 #taking the coordinate as the central data
 def matrix_base(row, column):	
@@ -49,15 +56,8 @@ def join_mosaic(name):
 	img_aux.save(f'{name}.jpg')
 
 	
-if __name__ == '__main__':
+def total_processing(x_y, name):
 	
-	#Maximum limits.
-	limits = []
-
-	#We generate a queue to manage the access to the memory of the processes.
-	manager = multiprocessing.Manager()
-	queue = manager.Queue()
-
 	#We use threads to speed up the search for boundaries.
 	thr_rows = threading.Thread(target=limit_max, args=('1000', '0')) #rows
 	thr_column = threading.Thread(target=limit_max, args=('0', '1000')) #columns
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 	thr_column.start()	
 	
 	#While finding the maxima, we generate the base array of coordinates (row, column, id_name)
-	matrix_base(15, 50)
+	matrix_base(*x_y)
 
 	thr_rows.join()
 	thr_column.join()
@@ -85,7 +85,11 @@ if __name__ == '__main__':
 	pro2.join()
 	
 	#We collect the downloaded images, and save them with a 'name'.
-	join_mosaic('Total')
+	join_mosaic(name)
+	
+if __name__ == '__main__':
+	#Main execution ((row, column), name)
+	total_processing((15,50), 'Total')
 	
 	
 
